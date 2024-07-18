@@ -1,16 +1,15 @@
 <?php
-require_once('../models/proveedores.models.php'); // Asegúrate de ajustar la ruta según la estructura de tu proyecto
-require_once('../config/cors.php'); // Archivo de configuración CORS
+require_once('../models/proveedores.models.php');
+require_once('../config/cors.php');
 
-$proveedor = new Clase_Proveedores(); // Suponiendo que Clase_Proveedores es tu clase para manejar proveedores
-
+$proveedor = new Clase_Proveedores();
 header('Content-Type: application/json'); // Establecer encabezado JSON desde el inicio
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Obtener el cuerpo de la solicitud POST
+    // Obtenemos el cuerpo de la solicitud POST
     $data = json_decode(file_get_contents('php://input'), true);
 
-    // Verificar que se haya enviado el parámetro 'op'
+    // Verificamos que se haya enviado el parámetro 'op'
     if (isset($data['op'])) {
         switch ($data['op']) {
             case "todos":
@@ -27,7 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $direccion = $data["direccion"];
                     $telefono = $data["telefono"];
                     $email = $data["email"];
-                    
                     $resultado = $proveedor->insertar($nombre, $direccion, $telefono, $email);
                     if ($resultado === "ok") {
                         echo json_encode(array("resultado" => "ok"));
@@ -45,9 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $direccion = $data["direccion"];
                     $telefono = $data["telefono"];
                     $email = $data["email"];
-    
                     $resultado = $proveedor->actualizar($proveedor_id, $nombre, $direccion, $telefono, $email);
-    
                     if ($resultado === "ok") {
                         echo json_encode(array("resultado" => "ok"));
                     } else {

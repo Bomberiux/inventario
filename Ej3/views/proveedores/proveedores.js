@@ -56,7 +56,7 @@ $('#formNuevoProveedor').submit(function(event) {
         success: function(response) {
             console.log(response);
             if (response && response.error) {
-                toastr.error("Error al insertar proveedor");
+                toastr.error("Error al insertar proveedor")
             } else {
                 toastr.success("Inserción exitosa");
                 $('#formNuevoProveedor')[0].reset();

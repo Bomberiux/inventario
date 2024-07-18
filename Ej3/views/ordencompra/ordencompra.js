@@ -76,56 +76,67 @@ $(document).ready(function() {
     }
 
     // Enviar nueva orden de compra
-    $('#formNuevaOrden').submit(function(e) {
-        e.preventDefault();
-        if (submitting) return;
+    $(document).ready(function() {
+        console.log('DOM completamente cargado y procesado');
+        
+        $('#formNuevaOrden').submit(function(e) {
+            e.preventDefault();
+            console.log('Evento submit capturado');
+            
+            // if (submitting) return;
 
-        submitting = true;
+            submitting = true;
 
-        var nombre_producto = $('#nombre_producto').val();
-        var cantidad = $('#cantidad').val();
-        var nombre_proveedor = $('#nombre_proveedor').val(); // Agregado para capturar proveedor
+            const producto_id = $('#producto_id').val();
+            const cantidad = $('#cantidad').val();
+            const proveedor_id = $('#proveedor_id').val();
+            const fecha = $('#fecha').val();
 
-        var datos = {
-            op: 'insertar',
-            nombre_producto: nombre_producto,
-            cantidad: cantidad,
-            nombre_proveedor: nombre_proveedor // Agregado para enviar a PHP
-        };
+            const datosInsert = {
+                op: 'insertar',
+                producto_id,
+                cantidad,
+                proveedor_id,
+                fecha 
+            };
 
-        $.ajax({
-            type: 'POST',
-            url: '../../controllers/ordencompra.controllers.php',
-            data: JSON.stringify(datos),
-            contentType: 'application/json',
-            success: function(response) {
-                if (typeof response === 'string') {
-                    try {
-                        response = JSON.parse(response);
-                    } catch (e) {
-                        toastr.error('Respuesta inválida del servidor.');
+            console.log('Datos a insertar:', datosInsert);
+
+            $.ajax({
+                type: 'POST',
+                url: '../../controllers/ordencompra.controllers.php',
+                data: JSON.stringify(datosInsert),
+                contentType: 'application/json',
+                success: function(response) {
+                    if (typeof response === 'string') {
+                        try {
+                            response = JSON.parse(response);
+                        } catch (e) {
+                            toastr.error('Respuesta inválida del servidor.');
+                            $('#formNuevaOrden')[0].reset();
+                            cargarOrdenesCompra();
+                            return;
+                        }
+                    }
+                    if (response && response.status === 'error' && response.message) {
+                        toastr.error(response.message);
+                    } else {
+                        toastr.success('Orden de compra registrada con éxito.');
                         $('#formNuevaOrden')[0].reset();
                         cargarOrdenesCompra();
-                        return;
                     }
+                },
+                complete: function() {
+                    submitting = false;
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error al insertar orden de compra:', error);
+                    toastr.error('Error al insertar orden de compra.');
                 }
-                if (response && response.status === 'error' && response.message) {
-                    toastr.error(response.message);
-                } else {
-                    toastr.success('Orden de compra registrada con éxito.');
-                    $('#formNuevaOrden')[0].reset();
-                    cargarOrdenesCompra();
-                }
-            },
-            complete: function() {
-                submitting = false;
-            },
-            error: function(xhr, status, error) {
-                console.error('Error al insertar orden de compra:', error);
-                toastr.error('Error al insertar orden de compra.');
-            }
+            });
         });
     });
+    
 
     // Editar orden de compra
     $('#cuerpoOrdenesCompra').on('click', '.btn-editar', function() {
@@ -171,12 +182,12 @@ $(document).ready(function() {
 
         submitting = true;
 
-        var id_orden = $('#id_orden').val();
-        var nombre_producto = $('#nombre_producto_editar').val();
-        var cantidad = $('#cantidad_editar').val();
-        var nombre_proveedor = $('#nombre_proveedor_editar').val(); // Agregado para capturar proveedor
+        const id_orden = $('#id_orden').val();
+        const nombre_producto = $('#nombre_producto_editar').val();
+        const cantidad = $('#cantidad_editar').val();
+        const nombre_proveedor = $('#nombre_proveedor_editar').val(); // Agregado para capturar proveedor
 
-        var datos = {
+        const datos = {
             op: 'actualizar',
             id_orden: id_orden,
             nombre_producto: nombre_producto,

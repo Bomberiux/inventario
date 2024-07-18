@@ -3,12 +3,17 @@ require_once('../config/conexion.php');
 
 class Clase_OrdenesCompra
 {
+    private $conexion;
+
+    public function __construct()
+    {
+        $con = new Clase_Conectar();
+        $this->conexion = $con->Procedimiento_Conectar();
+    }
+
     public function todos()
     {
         try {
-            $con = new Clase_Conectar();
-            $conexion = $con->Procedimiento_Conectar();
-            
             $consulta = "SELECT 
                             oc.orden_id,
                             oc.producto_id,
@@ -24,9 +29,9 @@ class Clase_OrdenesCompra
                         JOIN 
                             proveedores pr ON oc.proveedor_id = pr.proveedor_id";
                             
-            $stmt = $conexion->prepare($consulta);
+            $stmt = $this->conexion->prepare($consulta);
             if (!$stmt) {
-                throw new Exception("Error en la preparación de la consulta: " . $conexion->error);
+                throw new Exception("Error en la preparación de la consulta: " . $this->conexion->error);
             }
             
             $stmt->execute();
@@ -38,118 +43,148 @@ class Clase_OrdenesCompra
             }
             
             $stmt->close();
-            $conexion->close();
-            
-            return $ordenesCompra;  // Devuelve el array de órdenes de compra
+            return $ordenesCompra;
         } catch (Exception $e) {
             error_log("Error en la consulta todos() de ordenes-compra: " . $e->getMessage());
             return false;
         }
     }
 
-    public function insertar($producto_id, $proveedor_id, $cantidad, $fecha)
+    private function obtenerIdProductoPorNombre($nombre_producto)
+    {
+        $consulta = "SELECT producto_id FROM productos WHERE nombre = ?";
+        $stmt = $this->conexion->prepare($consulta);
+        if (!$stmt) {
+            throw new Exception("Error en la preparación de la consulta de producto: " . $this->conexion->error);
+        }
+        $stmt->bind_param("s", $nombre_producto);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        $producto = $resultado->fetch_assoc();
+        $stmt->close();
+        return $producto['producto_id'] ?? null;
+    }
+
+    private function obtenerIdProveedorPorNombre($nombre_proveedor)
+    {
+        $consulta = "SELECT proveedor_id FROM proveedores WHERE nombre = ?";
+        $stmt = $this->conexion->prepare($consulta);
+        if (!$stmt) {
+            throw new Exception("Error en la preparación de la consulta de proveedor: " . $this->conexion->error);
+        }
+        $stmt->bind_param("s", $nombre_proveedor);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        $proveedor = $resultado->fetch_assoc();
+        $stmt->close();
+        return $proveedor['proveedor_id'] ?? null;
+    }
+
+    public function insertar($nombre_producto, $nombre_proveedor, $cantidad, $fecha)
     {
         try {
-            $con = new Clase_Conectar();
-            $conexion = $con->Procedimiento_Conectar();
-    
-            // Insertar la orden de compra
-            $consulta = "INSERT INTO ordenescompra (producto_id, proveedor_id, cantidad, fecha) VALUES (?, ?, ?, ?)";
-            $stmt = $conexion->prepare($consulta);
-            if (!$stmt) {
-                throw new Exception("Error en la preparación de la consulta de inserción: " . $conexion->error);
+            if (empty($nombre_producto) || empty($nombre_proveedor)) {
+                throw new Exception("El nombre del producto o proveedor no puede estar vacío.");
             }
-            $stmt->bind_param("iiis", $producto_id, $proveedor_id, $cantidad, $fecha);
+
+            $producto_id = $this->obtenerIdProductoPorNombre($nombre_producto);
+            $proveedor_id = $this->obtenerIdProveedorPorNombre($nombre_proveedor);
+            
+            if (!$producto_id) {
+                throw new Exception("El producto con nombre '$nombre_producto' no fue encontrado.");
+            }
+            if (!$proveedor_id) {
+                throw new Exception("El proveedor con nombre '$nombre_proveedor' no fue encontrado.");
+            }
+
+            $consulta = "INSERT INTO ordenescompra (producto_id, proveedor_id, cantidad, fecha) VALUES (?, ?, ?, ?)";
+            $stmt = $this->conexion->prepare($consulta);
+            if (!$stmt) {
+                throw new Exception("Error en la preparación de la consulta de inserción: " . $this->conexion->error);
+            }
+            $stmt->bind_param("ssis", $producto_id, $proveedor_id, $cantidad, $fecha);
             
             if ($stmt->execute()) {
                 $stmt->close();
-                return true;  // Devuelve true cuando la inserción es exitosa
+                return true;
             } else {
                 throw new Exception("Error al ejecutar la consulta de inserción: " . $stmt->error);
             }
         } catch (Exception $e) {
             error_log("Error al insertar orden de compra: " . $e->getMessage());
             return false;
-        } finally {
-            if (isset($conexion)) {
-                $conexion->close();
-            }
         }
     }
 
-    public function actualizar($orden_id, $producto_id, $proveedor_id, $cantidad, $fecha)
+    public function actualizar($orden_id, $nombre_producto, $nombre_proveedor, $cantidad, $fecha)
     {
         try {
-            $con = new Clase_Conectar();
-            $conexion = $con->Procedimiento_Conectar();
-    
-            // Actualizar la orden de compra
-            $consulta = "UPDATE ordenescompra SET producto_id = ?, proveedor_id = ?, cantidad = ?, fecha = ? WHERE orden_id = ?";
-            $stmt = $conexion->prepare($consulta);
-            if (!$stmt) {
-                throw new Exception("Error en la preparación de la consulta de actualización: " . $conexion->error);
+            if (empty($nombre_producto) || empty($nombre_proveedor)) {
+                throw new Exception("El nombre del producto o proveedor no puede estar vacío.");
             }
-            $stmt->bind_param("iiisi", $producto_id, $proveedor_id, $cantidad, $fecha, $orden_id);
+
+            $producto_id = $this->obtenerIdProductoPorNombre($nombre_producto);
+            $proveedor_id = $this->obtenerIdProveedorPorNombre($nombre_proveedor);
+            
+            if (!$producto_id) {
+                throw new Exception("El producto con nombre '$nombre_producto' no fue encontrado.");
+            }
+            if (!$proveedor_id) {
+                throw new Exception("El proveedor con nombre '$nombre_proveedor' no fue encontrado.");
+            }
+
+            $consulta = "UPDATE ordenescompra SET producto_id = ?, proveedor_id = ?, cantidad = ?, fecha = ? WHERE orden_id = ?";
+            $stmt = $this->conexion->prepare($consulta);
+            if (!$stmt) {
+                throw new Exception("Error en la preparación de la consulta de actualización: " . $this->conexion->error);
+            }
+            $stmt->bind_param("ssiis", $producto_id, $proveedor_id, $cantidad, $fecha, $orden_id);
             
             if ($stmt->execute()) {
                 $stmt->close();
-                return true;  // Devuelve true cuando la actualización es exitosa
+                return true;
             } else {
                 throw new Exception("Error al ejecutar la consulta de actualización: " . $stmt->error);
             }
         } catch (Exception $e) {
             error_log("Error al actualizar orden de compra: " . $e->getMessage());
             return false;
-        } finally {
-            if (isset($conexion)) {
-                $conexion->close();
-            }
         }
     }
 
     public function eliminar($orden_id)
     {
         try {
-            $con = new Clase_Conectar();
-            $conexion = $con->Procedimiento_Conectar();
-            
             $consulta = "DELETE FROM ordenescompra WHERE orden_id=?";
-            $stmt = $conexion->prepare($consulta);
+            $stmt = $this->conexion->prepare($consulta);
             if (!$stmt) {
-                throw new Exception("Error en la preparación de la consulta de eliminación: " . $conexion->error);
+                throw new Exception("Error en la preparación de la consulta de eliminación: " . $this->conexion->error);
             }
             $stmt->bind_param("i", $orden_id);
             
             if ($stmt->execute()) {
                 $stmt->close();
-                return true;  // Devuelve true cuando la eliminación es exitosa
+                return true;
             } else {
                 throw new Exception("Error al ejecutar la consulta de eliminación: " . $stmt->error);
             }
         } catch (Exception $e) {
             error_log("Error al eliminar orden de compra: " . $e->getMessage());
             return false;
-        } finally {
-            if (isset($conexion)) {
-                $conexion->close();
-            }
         }
     }
 
     public function buscarPorProducto($nombre_producto)
     {
         try {
-            $con = new Clase_Conectar();
-            $conexion = $con->Procedimiento_Conectar();
-    
             $consulta = "SELECT oc.*, p.nombre AS nombre_producto, pr.nombre AS nombre_proveedor
-                         FROM ordenescompra oc
-                         INNER JOIN productos p ON oc.producto_id = p.producto_id
-                         INNER JOIN proveedores pr ON oc.proveedor_id = pr.proveedor_id
-                         WHERE p.nombre LIKE ?";
-            $stmt = $conexion->prepare($consulta);
+                        FROM ordenescompra oc
+                        INNER JOIN productos p ON oc.producto_id = p.producto_id
+                        INNER JOIN proveedores pr ON oc.proveedor_id = pr.proveedor_id
+                        WHERE p.nombre LIKE ?";
+            $stmt = $this->conexion->prepare($consulta);
             if (!$stmt) {
-                throw new Exception("Error en la preparación de la consulta: " . $conexion->error);
+                throw new Exception("Error en la preparación de la consulta: " . $this->conexion->error);
             }
             $productoBusqueda = "%" . $nombre_producto . "%";
             $stmt->bind_param("s", $productoBusqueda);
@@ -168,27 +203,20 @@ class Clase_OrdenesCompra
         } catch (Exception $e) {
             error_log("Error al buscar órdenes por producto: " . $e->getMessage());
             return false;
-        } finally {
-            if (isset($conexion)) {
-                $conexion->close();
-            }
         }
     }
 
     public function buscarPorProveedor($nombre_proveedor)
     {
         try {
-            $con = new Clase_Conectar();
-            $conexion = $con->Procedimiento_Conectar();
-    
             $consulta = "SELECT oc.*, p.nombre AS nombre_producto, pr.nombre AS nombre_proveedor
-                         FROM ordenescompra oc
-                         INNER JOIN productos p ON oc.producto_id = p.producto_id
-                         INNER JOIN proveedores pr ON oc.proveedor_id = pr.proveedor_id
-                         WHERE pr.nombre LIKE ?";
-            $stmt = $conexion->prepare($consulta);
+                        FROM ordenescompra oc
+                        INNER JOIN productos p ON oc.producto_id = p.producto_id
+                        INNER JOIN proveedores pr ON oc.proveedor_id = pr.proveedor_id
+                        WHERE pr.nombre LIKE ?";
+            $stmt = $this->conexion->prepare($consulta);
             if (!$stmt) {
-                throw new Exception("Error en la preparación de la consulta: " . $conexion->error);
+                throw new Exception("Error en la preparación de la consulta: " . $this->conexion->error);
             }
             $proveedorBusqueda = "%" . $nombre_proveedor . "%";
             $stmt->bind_param("s", $proveedorBusqueda);
@@ -207,52 +235,6 @@ class Clase_OrdenesCompra
         } catch (Exception $e) {
             error_log("Error al buscar órdenes por proveedor: " . $e->getMessage());
             return false;
-        } finally {
-            if (isset($conexion)) {
-                $conexion->close();
-            }
-        }
-    }
-
-    public function buscarPorId($orden_id)
-    {
-        try {
-            $con = new Clase_Conectar();
-            $conexion = $con->Procedimiento_Conectar();
-    
-            $consulta = "SELECT oc.*, p.nombre AS nombre_producto, pr.nombre AS nombre_proveedor
-                         FROM ordenescompra oc
-                         INNER JOIN productos p ON oc.producto_id = p.producto_id
-                         INNER JOIN proveedores pr ON oc.proveedor_id = pr.proveedor_id
-                         WHERE oc.orden_id = ?";
-            $stmt = $conexion->prepare($consulta);
-            if (!$stmt) {
-                throw new Exception("Error en la preparación de la consulta: " . $conexion->error);
-            }
-            $stmt->bind_param("i", $orden_id);
-    
-            if ($stmt->execute()) {
-                $resultado = $stmt->get_result();
-                if ($resultado->num_rows === 1) {
-                    $orden_compra = $resultado->fetch_assoc();
-                    $stmt->close();
-                    return $orden_compra;
-                } else {
-                    throw new Exception("No se encontró la orden de compra.");
-                }
-            } else {
-                throw new Exception("Error al ejecutar la consulta: " . $stmt->error);
-            }
-        } catch (Exception $e) {
-            error_log("Error al buscar orden de compra por ID: " . $e->getMessage());
-            return false;
-        } finally {
-            if (isset($stmt)) {
-                $stmt->close();
-            }
-            if (isset($conexion)) {
-                $conexion->close();
-            }
         }
     }
 }

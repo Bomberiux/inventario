@@ -55,18 +55,18 @@ $pagina_actual = 'Proveedores'; // Indica que estamos en la página de Proveedor
                         <form id="formNuevoProveedor">
                             <div class="form-group">
                                 <label for="nombre_proveedor">Nombre del Proveedor</label>
-                                <input type="text" class="form-control" id="nombre_proveedor" name="nombre_proveedor" required>
+                                <input type="text" class="form-control" id="nombre_proveedor" name="nombre_proveedor" required pattern="[A-Za-z\sáéíóúñÁÉÍÓÚÜüÑñ]+" title="Solo se permiten letras y espacios" maxlength="30">
                             </div>
                             <div class="form-group">
-                                <label for="direccion_proveedor">Dirección del Proveedor</label>
+                                <label for="direccion_proveedor">Dirección</label>
                                 <input type="text" class="form-control" id="direccion_proveedor" name="direccion_proveedor" required>
                             </div>
                             <div class="form-group">
-                                <label for="telefono_proveedor">Teléfono del Proveedor</label>
+                                <label for="telefono_proveedor">Teléfono</label>
                                 <input type="text" class="form-control" id="telefono_proveedor" name="telefono_proveedor" required>
                             </div>
                             <div class="form-group">
-                                <label for="email_proveedor">Email del Proveedor</label>
+                                <label for="email_proveedor">Email</label>
                                 <input type="email" class="form-control" id="email_proveedor" name="email_proveedor" required>
                             </div>
                             <button type="submit" class="btn btn-primary">Registrar</button>
@@ -88,21 +88,22 @@ $pagina_actual = 'Proveedores'; // Indica que estamos en la página de Proveedor
                     </div>
                     <form id="formEditarProveedor" novalidate>
                         <div class="modal-body">
-                            <input type="hidden" id="id_proveedor" name="id_proveedor">
+                            <input type="hidden" id="proveedor_id" name="proveedor_id">
                             <div class="form-group">
                                 <label for="nombre_proveedor_editar">Nombre del Proveedor</label>
                                 <input type="text" class="form-control" id="nombre_proveedor_editar" name="nombre_proveedor_editar" required>
+                                <div class="invalid-feedback">Por favor, ingrese un nombre válido para el proveedor.</div>
                             </div>
                             <div class="form-group">
-                                <label for="direccion_proveedor_editar">Dirección del Proveedor</label>
+                                <label for="direccion_proveedor_editar">Dirección</label>
                                 <input type="text" class="form-control" id="direccion_proveedor_editar" name="direccion_proveedor_editar" required>
                             </div>
                             <div class="form-group">
-                                <label for="telefono_proveedor_editar">Teléfono del Proveedor</label>
+                                <label for="telefono_proveedor_editar">Teléfono</label>
                                 <input type="text" class="form-control" id="telefono_proveedor_editar" name="telefono_proveedor_editar" required>
                             </div>
                             <div class="form-group">
-                                <label for="email_proveedor_editar">Email del Proveedor</label>
+                                <label for="email_proveedor_editar">Email</label>
                                 <input type="email" class="form-control" id="email_proveedor_editar" name="email_proveedor_editar" required>
                             </div>
                         </div>
@@ -127,7 +128,7 @@ $pagina_actual = 'Proveedores'; // Indica que estamos en la página de Proveedor
                     </div>
                     <div class="modal-body">
                         <form id="formEliminarProveedor">
-                            <input type="hidden" id="id_proveedor_eliminar" name="id_proveedor_eliminar">
+                            <input type="hidden" id="proveedor_id_eliminar" name="proveedor_id_eliminar">
                             <p>¿Está seguro de eliminar este proveedor?</p>
                             <button type="submit" class="btn btn-primary">Eliminar</button>
                         </form>
@@ -136,7 +137,7 @@ $pagina_actual = 'Proveedores'; // Indica que estamos en la página de Proveedor
             </div>
         </div>
     </div>
-
+    
     <?php require_once('../html/footer.php') ?>
     <?php require_once('../html/scripts.php') ?>
 

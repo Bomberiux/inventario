@@ -3,12 +3,14 @@ $pagina_actual = 'Ordenes de Compra'; // Variable para indicar que estamos en la
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <?php require_once('../html/head.php') ?>
     <style>
         /* Estilos adicionales personalizados */
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="row mt-4">
@@ -43,8 +45,7 @@ $pagina_actual = 'Ordenes de Compra'; // Variable para indicar que estamos en la
                         </tr>
                     </thead>
                     <tbody id="cuerpoOrdenesCompra">
-                        <!-- Ejemplo de cómo se puede generar dinámicamente una fila -->
-                        <!-- Fin del ejemplo -->
+                        <!-- Aquí se generarán dinámicamente las filas -->
                     </tbody>
                 </table>
             </div>
@@ -61,17 +62,19 @@ $pagina_actual = 'Ordenes de Compra'; // Variable para indicar que estamos en la
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form id="formNuevaOrden">
+                        <form id="formNuevaOrden" method="post" action="procesar_orden.php">
                             <div class="form-group">
                                 <label for="producto_id">Producto</label>
                                 <select class="form-control" id="producto_id" name="producto_id" required>
                                     <option value="">Seleccione un producto</option>
+                                    <!-- Opciones dinámicas -->
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="proveedor_id">Proveedor</label>
                                 <select class="form-control" id="proveedor_id" name="proveedor_id" required>
                                     <option value="">Seleccione un proveedor</option>
+                                    <!-- Opciones dinámicas -->
                                 </select>
                             </div>
                             <div class="form-group">
@@ -100,18 +103,20 @@ $pagina_actual = 'Ordenes de Compra'; // Variable para indicar que estamos en la
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form id="formEditarOrden">
+                        <form id="formEditarOrden" method="post" action="procesar_edicion_orden.php">
                             <input type="hidden" id="orden_id" name="orden_id">
                             <div class="form-group">
                                 <label for="producto_id_editar">Producto</label>
                                 <select class="form-control" id="producto_id_editar" name="producto_id" required>
                                     <option value="">Seleccione un producto</option>
+                                    <!-- Opciones dinámicas -->
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="proveedor_id_editar">Proveedor</label>
                                 <select class="form-control" id="proveedor_id_editar" name="proveedor_id" required>
                                     <option value="">Seleccione un proveedor</option>
+                                    <!-- Opciones dinámicas -->
                                 </select>
                             </div>
                             <div class="form-group">
@@ -133,4 +138,5 @@ $pagina_actual = 'Ordenes de Compra'; // Variable para indicar que estamos en la
     <?php require_once('../html/scripts.php') ?>
     <script src="ordencompra.js"></script>
 </body>
+
 </html>

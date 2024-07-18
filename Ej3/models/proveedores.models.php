@@ -83,7 +83,6 @@ class Clase_Proveedores
             }
         }
     }
-
     public function eliminar($proveedor_id)
     {
         try {
