@@ -32,16 +32,16 @@ class Clase_Proveedores
         }
     }
 
-    public function insertar($nombre, $direccion, $telefono)
+    public function insertar($nombre, $direccion, $telefono, $email)
     {
         try {
             $con = new Clase_Conectar();
             $conexion = $con->Procedimiento_Conectar();
             
-            $consulta = "INSERT INTO proveedores (nombre, direccion, telefono) VALUES (?, ?, ?)";
+            $consulta = "INSERT INTO proveedores (nombre, direccion, telefono, email) VALUES (?, ?, ?, ?)";
             $stmt = $conexion->prepare($consulta);
             
-            $stmt->bind_param("sss", $nombre, $direccion, $telefono);
+            $stmt->bind_param("ssss", $nombre, $direccion, $telefono, $email);
             
             if ($stmt->execute()) {
                 return "ok";
@@ -58,16 +58,16 @@ class Clase_Proveedores
         }
     }
 
-    public function actualizar($proveedor_id, $nombre, $direccion, $telefono)
+    public function actualizar($proveedor_id, $nombre, $direccion, $telefono, $email)
     {
         try {
             $con = new Clase_Conectar();
             $conexion = $con->Procedimiento_Conectar();
             
-            $consulta = "UPDATE proveedores SET nombre=?, direccion=?, telefono=? WHERE proveedor_id=?";
+            $consulta = "UPDATE proveedores SET nombre=?, direccion=?, telefono=?, email=? WHERE proveedor_id=?";
             $stmt = $conexion->prepare($consulta);
             
-            $stmt->bind_param("sssi", $nombre, $direccion, $telefono, $proveedor_id);
+            $stmt->bind_param("ssssi", $nombre, $direccion, $telefono, $email, $proveedor_id);
             
             if ($stmt->execute()) {
                 return "ok";

@@ -22,11 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 break;
             case "insertar":
-                if (isset($data["nombre"], $data["direccion"], $data["telefono"])) {
+                if (isset($data["nombre"], $data["direccion"], $data["telefono"], $data["email"])) {
                     $nombre = $data["nombre"];
                     $direccion = $data["direccion"];
                     $telefono = $data["telefono"];
-                    $resultado = $proveedor->insertar($nombre, $direccion, $telefono);
+                    $email = $data["email"];
+                    
+                    $resultado = $proveedor->insertar($nombre, $direccion, $telefono, $email);
                     if ($resultado === "ok") {
                         echo json_encode(array("resultado" => "ok"));
                     } else {
@@ -36,24 +38,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     echo json_encode(array("resultado" => "error", "error" => "Faltan parámetros para insertar el proveedor."));
                 }
                 break;
-                case "actualizar":
-                    if (isset($data["proveedor_id"], $data["nombre"], $data["direccion"], $data["telefono"])) {
-                        $proveedor_id = $data["proveedor_id"];
-                        $nombre = $data["nombre"];
-                        $direccion = $data["direccion"];
-                        $telefono = $data["telefono"];
+            case "actualizar":
+                if (isset($data["proveedor_id"], $data["nombre"], $data["direccion"], $data["telefono"], $data["email"])) {
+                    $proveedor_id = $data["proveedor_id"];
+                    $nombre = $data["nombre"];
+                    $direccion = $data["direccion"];
+                    $telefono = $data["telefono"];
+                    $email = $data["email"];
     
-                        $resultado = $proveedor->actualizar($proveedor_id, $nombre, $direccion, $telefono);
+                    $resultado = $proveedor->actualizar($proveedor_id, $nombre, $direccion, $telefono, $email);
     
-                        if ($resultado === "ok") {
-                            echo json_encode(array("resultado" => "ok"));
-                        } else {
-                            echo json_encode(array("resultado" => "error", "error" => "Error al actualizar el proveedor: " . $resultado));
-                        }
+                    if ($resultado === "ok") {
+                        echo json_encode(array("resultado" => "ok"));
                     } else {
-                        echo json_encode(array("resultado" => "error", "error" => "Faltan parámetros para actualizar el proveedor."));
+                        echo json_encode(array("resultado" => "error", "error" => "Error al actualizar el proveedor: " . $resultado));
                     }
-                    break;
+                } else {
+                    echo json_encode(array("resultado" => "error", "error" => "Faltan parámetros para actualizar el proveedor."));
+                }
+                break;
             case "eliminar":
                 if (isset($data["proveedor_id"])) {
                     $proveedor_id = $data["proveedor_id"];
