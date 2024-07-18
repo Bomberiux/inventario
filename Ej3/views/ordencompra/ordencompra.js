@@ -77,64 +77,61 @@ $(document).ready(function() {
 
     // Enviar nueva orden de compra
     $(document).ready(function() {
-        console.log('DOM completamente cargado y procesado');
-        
-        $('#formNuevaOrden').submit(function(e) {
-            e.preventDefault();
-            console.log('Evento submit capturado');
+            console.log('DOM completamente cargado y procesado');
             
-            // if (submitting) return;
+         $('#formNuevaOrden').submit(function(event) {
+        event.preventDefault();
 
-            submitting = true;
+        if (submitting) {
+            return; // Evitar envío múltiple si ya se está procesando una solicitud
+        }
 
-            const producto_id = $('#producto_id').val();
-            const cantidad = $('#cantidad').val();
-            const proveedor_id = $('#proveedor_id').val();
-            const fecha = $('#fecha').val();
+        var nombre_producto = $('#producto_id').val();
+        var nombre_proveedor = $('#proveedor_id').val();
+        var cantidad = $('#cantidad').val();
+        var fecha = $('#fecha').val();
 
-            const datosInsert = {
-                op: 'insertar',
-                producto_id,
-                cantidad,
-                proveedor_id,
-                fecha 
-            };
+        var data = {
+            op: 'insertar',
+            nombre_producto: nombre_producto,
+            nombre_proveedor:nombre_proveedor,
+            cantidad: cantidad,
+            fecha: fecha
+        };
 
-            console.log('Datos a insertar:', datosInsert);
 
-            $.ajax({
-                type: 'POST',
-                url: '../../controllers/ordencompra.controllers.php',
-                data: JSON.stringify(datosInsert),
-                contentType: 'application/json',
-                success: function(response) {
-                    if (typeof response === 'string') {
-                        try {
-                            response = JSON.parse(response);
-                        } catch (e) {
-                            toastr.error('Respuesta inválida del servidor.');
-                            $('#formNuevaOrden')[0].reset();
-                            cargarOrdenesCompra();
-                            return;
-                        }
+        $.ajax({
+            url: '../../controllers/ordencompra.controllers.php',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            success: function(response) {
+                submitting = false;
+
+                if (typeof response === 'string') {
+                    try {
+                        response = JSON.parse(response);
+                    } catch (e) {
+                        toastr.error('Respuesta inválida del servidor.');
+                        return;
                     }
-                    if (response && response.status === 'error' && response.message) {
-                        toastr.error(response.message);
-                    } else {
-                        toastr.success('Orden de compra registrada con éxito.');
-                        $('#formNuevaOrden')[0].reset();
-                        cargarOrdenesCompra();
-                    }
-                },
-                complete: function() {
-                    submitting = false;
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error al insertar orden de compra:', error);
-                    toastr.error('Error al insertar orden de compra.');
                 }
-            });
+
+                if (response && response.status === 'error' && response.message) {
+                    toastr.error(response.message);
+                } else {
+                    toastr.success('Orden de compra guardada correctamente');
+                    cerrarModal();
+                    cargarOrdenesCompra(); // Función para recargar las órdenes de compra en la tabla
+                }
+            },
+            error: function(xhr, status, error) {
+                submitting = false;
+                console.error(error);
+                toastr.error('Error de conexión al servidor. Inténtelo de nuevo más tarde.');
+            }
         });
+    });
     });
     
 

@@ -62,20 +62,18 @@ $pagina_actual = 'Ordenes de Compra'; // Variable para indicar que estamos en la
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form id="formNuevaOrden" method="post" action="procesar_orden.php">
+                        <form id="formNuevaOrden">
                             <div class="form-group">
                                 <label for="producto_id">Producto</label>
-                                <select class="form-control" id="producto_id" name="producto_id" required>
+                                <input type="text" class="form-control" id="producto_id" name="producto_id" required>
                                     <option value="">Seleccione un producto</option>
-                                    <!-- Opciones dinámicas -->
-                                </select>
+                                </input>
                             </div>
                             <div class="form-group">
                                 <label for="proveedor_id">Proveedor</label>
-                                <select class="form-control" id="proveedor_id" name="proveedor_id" required>
+                                <input type="text" class="form-control" id="proveedor_id" name="proveedor_id" required>
                                     <option value="">Seleccione un proveedor</option>
-                                    <!-- Opciones dinámicas -->
-                                </select>
+                                </input>
                             </div>
                             <div class="form-group">
                                 <label for="cantidad">Cantidad</label>
@@ -90,7 +88,6 @@ $pagina_actual = 'Ordenes de Compra'; // Variable para indicar que estamos en la
                     </div>
                 </div>
             </div>
-        </div>
 
         <!-- Modal para editar orden de compra -->
         <div class="modal fade" id="modalEditarOrden" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">

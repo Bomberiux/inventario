@@ -37,7 +37,7 @@ class Clase_OrdenesCompra
             $stmt->execute();
             $resultado = $stmt->get_result();
             
-            $ordenesCompra = array();
+            $ordenesCompra = [];
             while ($fila = $resultado->fetch_assoc()) {
                 $ordenesCompra[] = $fila;
             }
@@ -45,82 +45,98 @@ class Clase_OrdenesCompra
             $stmt->close();
             return $ordenesCompra;
         } catch (Exception $e) {
-            error_log("Error en la consulta todos() de ordenes-compra: " . $e->getMessage());
+            error_log("Error en la consulta todos() de ordenescompra: " . $e->getMessage());
             return false;
         }
     }
 
-    private function obtenerIdProductoPorNombre($nombre_producto)
-    {
-        $consulta = "SELECT producto_id FROM productos WHERE nombre = ?";
-        $stmt = $this->conexion->prepare($consulta);
-        if (!$stmt) {
-            throw new Exception("Error en la preparación de la consulta de producto: " . $this->conexion->error);
-        }
-        $stmt->bind_param("s", $nombre_producto);
-        $stmt->execute();
-        $resultado = $stmt->get_result();
-        $producto = $resultado->fetch_assoc();
-        $stmt->close();
-        return $producto['producto_id'] ?? null;
-    }
-
-    private function obtenerIdProveedorPorNombre($nombre_proveedor)
-    {
-        $consulta = "SELECT proveedor_id FROM proveedores WHERE nombre = ?";
-        $stmt = $this->conexion->prepare($consulta);
-        if (!$stmt) {
-            throw new Exception("Error en la preparación de la consulta de proveedor: " . $this->conexion->error);
-        }
-        $stmt->bind_param("s", $nombre_proveedor);
-        $stmt->execute();
-        $resultado = $stmt->get_result();
-        $proveedor = $resultado->fetch_assoc();
-        $stmt->close();
-        return $proveedor['proveedor_id'] ?? null;
-    }
-
-    public function insertar($nombre_producto, $nombre_proveedor, $cantidad, $fecha)
+    private function obtenerIdPorNombre($tabla, $nombre_columna, $nombre)
     {
         try {
-            if (empty($nombre_producto) || empty($nombre_proveedor)) {
-                throw new Exception("El nombre del producto o proveedor no puede estar vacío.");
+            $consulta = "SELECT id FROM $tabla WHERE $nombre_columna = ?";
+            $stmt = $this->conexion->prepare($consulta);
+            if (!$stmt) {
+                throw new Exception("Error en la preparación de la consulta de $tabla: " . $this->conexion->error);
             }
+            $stmt->bind_param("s", $nombre);
+            $stmt->execute();
+            $resultado = $stmt->get_result();
+            $registro = $resultado->fetch_assoc();
+            $stmt->close();
+            return $registro['id'] ?? null;
+        } catch (Exception $e) {
+            error_log("Error al obtener el ID por nombre en $tabla: " . $e->getMessage());
+            return null;
+        }
+    }
 
-            $producto_id = $this->obtenerIdProductoPorNombre($nombre_producto);
-            $proveedor_id = $this->obtenerIdProveedorPorNombre($nombre_proveedor);
+    public function obtenerIdProductoPorNombre($nombre_producto)
+    {
+        return $this->obtenerIdPorNombre('productos', 'nombre', $nombre_producto);
+    }
+
+    public function obtenerIdProveedorPorNombre($nombre_proveedor)
+    {
+        return $this->obtenerIdPorNombre('proveedores', 'nombre', $nombre_proveedor);
+    }
+
+    public function insertarOrdenCompra($nombre_producto, $nombre_proveedor, $cantidad, $fecha)
+    {
+        try {
+            // Obtener el id_producto basado en el nombre_producto
+            $consulta_producto = "SELECT producto_id FROM productos WHERE nombre = ?";
+            $stmt_producto = $this->conexion->prepare($consulta_producto);
+            if (!$stmt_producto) {
+                throw new Exception("Error en la preparación de la consulta del producto: " . $this->conexion->error);
+            }
+            $stmt_producto->bind_param("s", $nombre_producto);
+            $stmt_producto->execute();
+            $stmt_producto->bind_result($producto_id);
             
-            if (!$producto_id) {
-                throw new Exception("El producto con nombre '$nombre_producto' no fue encontrado.");
+            if (!$stmt_producto->fetch()) {
+                throw new Exception("El producto '$nombre_producto' no fue encontrado.");
             }
-            if (!$proveedor_id) {
-                throw new Exception("El proveedor con nombre '$nombre_proveedor' no fue encontrado.");
+            $stmt_producto->close();
+            
+            // Obtener el id_proveedor basado en el nombre_proveedor
+            $consulta_proveedor = "SELECT proveedor_id FROM proveedores WHERE nombre = ?";
+            $stmt_proveedor = $this->conexion->prepare($consulta_proveedor);
+            if (!$stmt_proveedor) {
+                throw new Exception("Error en la preparación de la consulta del proveedor: " . $this->conexion->error);
             }
-
+            $stmt_proveedor->bind_param("s", $nombre_proveedor);
+            $stmt_proveedor->execute();
+            $stmt_proveedor->bind_result($proveedor_id);
+            
+            if (!$stmt_proveedor->fetch()) {
+                throw new Exception("El proveedor '$nombre_proveedor' no fue encontrado.");
+            }
+            $stmt_proveedor->close();
+            
+            // Insertar la orden de compra con los ids obtenidos
             $consulta = "INSERT INTO ordenescompra (producto_id, proveedor_id, cantidad, fecha) VALUES (?, ?, ?, ?)";
             $stmt = $this->conexion->prepare($consulta);
             if (!$stmt) {
-                throw new Exception("Error en la preparación de la consulta de inserción: " . $this->conexion->error);
+                throw new Exception("Error en la preparación de la consulta de orden de compra: " . $this->conexion->error);
             }
-            $stmt->bind_param("ssis", $producto_id, $proveedor_id, $cantidad, $fecha);
+            $stmt->bind_param("iiis", $producto_id, $proveedor_id, $cantidad, $fecha);
             
             if ($stmt->execute()) {
-                $stmt->close();
-                return true;
+                return "ok";
             } else {
-                throw new Exception("Error al ejecutar la consulta de inserción: " . $stmt->error);
+                throw new Exception($stmt->error);
             }
         } catch (Exception $e) {
-            error_log("Error al insertar orden de compra: " . $e->getMessage());
-            return false;
+            error_log("Error al insertar la orden de compra: " . $e->getMessage());
+            return "Error al insertar la orden de compra: " . $e->getMessage();
         }
     }
 
     public function actualizar($orden_id, $nombre_producto, $nombre_proveedor, $cantidad, $fecha)
     {
         try {
-            if (empty($nombre_producto) || empty($nombre_proveedor)) {
-                throw new Exception("El nombre del producto o proveedor no puede estar vacío.");
+            if (empty($nombre_producto) || empty($nombre_proveedor) || empty($cantidad) || empty($fecha)) {
+                throw new Exception("Todos los campos deben ser llenados.");
             }
 
             $producto_id = $this->obtenerIdProductoPorNombre($nombre_producto);
@@ -191,7 +207,7 @@ class Clase_OrdenesCompra
     
             if ($stmt->execute()) {
                 $resultado = $stmt->get_result();
-                $ordenes_compra = array();
+                $ordenes_compra = [];
                 while ($fila = $resultado->fetch_assoc()) {
                     $ordenes_compra[] = $fila;
                 }
@@ -223,7 +239,7 @@ class Clase_OrdenesCompra
     
             if ($stmt->execute()) {
                 $resultado = $stmt->get_result();
-                $ordenes_compra = array();
+                $ordenes_compra = [];
                 while ($fila = $resultado->fetch_assoc()) {
                     $ordenes_compra[] = $fila;
                 }
